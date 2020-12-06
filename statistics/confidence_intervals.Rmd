@@ -1,0 +1,70 @@
+---
+title: "Confidence Interval"
+output: html_notebook
+---
+
+**How likely is it that two numbers came from the same distribution?**
+
+Suppose you have three numbers: a, b and c. Then, "b is within c of a" means the same as "a is within c of b". Both of those statements are equivalent to "the absolute value of the difference between a and b is less than c".
+
+If somebody is $2\sigma$ away from you, what is a prob that you are $2\sigma$ away from them? => ~95%.
+
+The above also means that there is a 95% prob. that $p$ is within $2\sigma_{\hat{p}}$ of $\hat{p}$.
+
+```{r}
+library(matrixStats)
+```
+
+## Estimating population standard deviation
+
+```{r}
+n = c(3,10,30,100)
+std_est = numeric(length(n))
+mse_error = numeric(length(n))
+for (i in 1:length(n)) {
+  samples = matrix(rnorm(1000*n[i], mean=175, sd=10), ncol=n[i])
+  mse_error[i] = mean((sqrt(rowVars(samples)) - 10)^2)
+}
+
+plot(n,mse_error,'b', main='MSE STD estimate error vs sample size', lty='dashed', col='red')
+abline(h=0)
+```
+So if our sample size is >=30 using estimated STD from a sample seems reasonable.
+
+Standard deviation of a sampling distribution if we have >= 30 cases in a sample:
+
+$$
+\text{SE} = \sqrt{\frac{\text{Var}(\text{sample})}{n}}
+$$
+
+## Confidence Interval
+
+$$
+\bar{x} \pm z_{95\%}*\text{SE}
+$$
+
+### Finding 95% and 99% confidence intervals
+
+Empirical proof that $\mu = 175$ is ~95% of the time in range $\bar{x} \pm z_{95\%}*\text{SE}$.
+```{r}
+n = 100
+mu = 175
+z_95 = 1.96
+z_99 = 2.58
+population = rnorm(1000, mean=mu, sd=10)
+samples = matrix(sample(population, n*1000, replace=T), ncol=n)
+p = rowMeans(samples)
+se = sqrt(rowVars(samples)/n)
+lb = p - z_95*se
+up = p + z_95*se
+in_range = lb <= mu & mu <= up
+mean(in_range)
+```
+Same for 99% confidence:
+
+```{r}
+lb = p - z_99*se
+up = p + z_99*se
+in_range = lb <= mu & mu <= up
+mean(in_range)
+```

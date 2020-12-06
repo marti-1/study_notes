@@ -1,0 +1,57 @@
+---
+title: "dplyr"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+wine = read.csv('wine.csv', stringsAsFactors = F, encoding = 'UTF-8')
+head(wine)
+```
+Removing columns from dataset:
+```{r}
+wine = wine[,-c(1,3)]
+head(wine)
+```
+Creating a dataset by counting all observations grouped by country and then creating a new variable called count:
+```{r}
+wine %>% group_by(country) %>% summarize(count=n()) %>% arrange(desc(count))
+```
+Creating a new variable which contains the top 10 countries:
+
+```{r}
+top10_countries = wine %>% group_by(country) %>% summarize(count=n()) %>% slice_max(count, n=10) %>% select(country)
+top10_countries
+```
+Changing the format from data frame to vector as.character referencing the country column
+```{r}
+top10_countries = as.character(top10_countries$country)
+class(top10_countries)
+```
+Subsetting data selecting top ten countries and their points from wine:
+```{r}
+select_points=wine %>% 
+  filter(country %in% top10_countries) %>%
+  select(country, points) %>% 
+  arrange(country)
+
+ggplot(wine, aes(points,price)) + 
+  geom_point() + 
+  geom_smooth()
+```
+
+Creating top 15 percent cheapest wines with high rating using intersect function:
+
+```{r}
+top15percent=wine %>%
+  arrange(desc(points)) %>%
+  filter(points > quantile(points, prob = 0.85))
+
+cheapest15percent=wine %>%
+  arrange(price) %>%
+  head(nrow(top15percent))
+
+goodvalue = intersect(top15percent,cheapest15percent)
+
+goodvalue
+```

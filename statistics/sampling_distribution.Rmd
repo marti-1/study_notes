@@ -1,0 +1,74 @@
+---
+title: "Sampling distribution"
+output: html_notebook
+---
+
+## Population distribution
+
+Population mean = 943, standard deviation = 212. What is a probability of value >= 1000?
+
+```{r}
+z = (1000 - 943) / 212
+1 - pnorm(z)
+```
+
+NOTE. `pnorm(1.96)` -- Gives the area under the standard normal curve to the left of 1.96.
+
+## Sampling distribution
+
+What are the properties of a sampling distribution of population mean?
+
+**Mean**
+
+Given sample mean $\hat{p_i} = X_i/n$, where $n$ is number of trials and $X_i$ is sum of "successes", the sampling distribution mean is:
+
+$$
+\begin{equation}
+\mu_{\hat{p}} = \frac{\hat{p_1} + \hat{p_2} + \dots + \hat{p_n}}{N} \\
+=  \frac{\frac{X_1}{n} + \frac{X_2}{n} + \dots + \frac{X_n}{n}}{N} \\
+= \frac{\frac{1}{n}(X_1 + \dots + X_n)}{N} \\
+= \frac{(X_1 + \dots + X_n)}{n*N} \\
+= \frac{\mu_X}{n} = \frac{n*p}{n} = p
+\end{equation}
+$$
+Above we assume that N is infinite large.
+
+```{r}
+N <- c(1, 10, 30, 60, 120, 240, 480, 1000, 2000)
+mu = numeric(length(N))
+for (i in 1:length(N)) {
+  samples <- matrix(rnorm(30*N[i], mean=175, sd=10), ncol = 30)
+  mu[i] = mean(rowMeans(samples))
+}
+
+plot(N, mu, type='b', lty = 'dashed')
+abline(h=175)
+```
+**Variance**
+
+Getting variance of a sampling distribution of mean from a single sample $X_i$:
+$$
+\text{Var}(\hat{p_i}) = \text{Var}(\frac{X_i}{n}) \\
+= \frac{1}{n^2} \text{Var}(X_i) \\
+= \frac{n*\text{Var}(Y)}{n^2} \\
+= \frac{\text{Var}(Y)}{n}
+$$
+where $Y$ is a binomial variable. Notice, the above operation of moving $1/n^2$ out of $\text{Var}(\frac{X_i}{n})$, this is just a property of variance. $p$ is used instead of $\hat{p}$ because a process that generated $X_i$ was a Binomial process with probability $p$.
+
+```{r}
+n <- c(3,10,30,90,300,900)
+y <- numeric(length(n))
+y_est <- numeric(length(n))
+for (i in 1:length(n)) {
+  samples <- matrix(rnorm(1000*n[i], mean=175, sd=10), ncol = n[i])
+  y[i] <- var(rowMeans(samples))
+  y_est[i] <- var(samples[1,]) / n[i]
+}
+plot(n, y, type='b')
+
+lines(n, y_est, type='b', lty='dashed', col='red')
+legend('topright', 
+       lty=c('solid','dashed'),
+       legend=c('Dist. var', 'Est. var from single sample'), 
+       col=c('black', 'red'))
+```

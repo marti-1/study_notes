@@ -1,0 +1,24 @@
+---
+title: "Hypothesis testing"
+output: html_notebook
+---
+
+- Null hypothesis ($H_0$) -- average Lithuanian male height is 175cm.
+- Alternative hypothesis ($H_a$) -- average Lithuanian male height >175cm.
+
+Null hypothesis is rejected if the p-value <= $\alpha$ value picked before the experiment.
+
+_p-value_ -- is the probability of getting the observed value (e.g. sample mean) of the test statistic, or a value with **even greater evidence** against $H_0$, if the null hypothesis is actually true.
+
+```{r}
+mu = 175
+sample = rnorm(100, 181, 10)
+alpha = .05
+p = mean(sample)
+se = sqrt(var(sample) / length(sample))
+t = (p - mu) / se
+# pnorm sums dist from -inf to z value (t). In order to get the prob of getting the t statistic as extreme or even more extreme, we subtract the pnorm sum result from 1.
+p = 1-pnorm(t)
+reject = p <= alpha
+reject
+```
