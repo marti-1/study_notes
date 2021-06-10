@@ -3,3 +3,5 @@
 *.zip
 *.csv
 .Rhistory
+.idea/
+__pycache__/
